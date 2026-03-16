@@ -10,3 +10,24 @@
 
 # own secret vars store.
 personal.auto.tfvars
+
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+override.tf
+override.tf.json
+terraform.tfvars
+terraform.tfvars.json
+*.terraform.lock.hcl
+
+# Sensitive files
+key.json
+*.key
+*.pem
+*.priv
+*.pub
+**/.terraformrc
+.terraformrc
+.terraform.d/
