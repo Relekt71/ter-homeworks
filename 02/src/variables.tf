@@ -31,8 +31,15 @@ variable "vpc_name" {
 
 ###ssh vars
 
-variable "vms_ssh_root_key" {
+variable "vms_ssh_root_key_path" {
   type        = string
-  default     = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIn2+Es9D92Y0Ut04K0nOB7UUfU6dUd+9IngBDf2egUk relekt@StudyGrVM"
-  description = "ssh-keygen -t ed25519"
+  description = "Путь к файлу с публичным SSH ключом"
 }
+
+variable "vms_ssh_root_key" {
+ type        = string
+  description = "Публичный SSH ключ (заполняется автоматически)"
+  sensitive   = true
+  default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBLMvM157mcMYd+jLY5fXuDzhItGuKGNqND4PWSSWBox"
+}
+
