@@ -3,7 +3,7 @@ terraform {
     required_providers {
     yandex = {
       source  = "yandex-cloud/yandex"
-      version = ">= 0.193.0"
+      version = ">= 0.191.0"
     }
     local = {
       source = "hashicorp/local"
