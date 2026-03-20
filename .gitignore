@@ -1,17 +1,38 @@
-# Local .terraform directories and files
-**/.terraform/*
-.terraform*
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfstate.backup
+**/plugins/
+**/.terraform/providers/
 
-!.terraformrc
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# own secret vars store.
-personal.auto.tfvars
-
-
+# Variable files
+*.tfvars
+*.tfvars.json
 terraform.tfvars
+terraform.tfvars.json
 
-tfplan
+# Inventory files
+inventory.ini
+inventory.yaml
+for.ini
+hosts.ini
+hosts.yaml
+
+# Local files
+*.log
+*.key
+*.pem
+*.token
+token.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
