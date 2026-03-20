@@ -16,3 +16,4 @@
 
 Задание 4
 
+![alt text](<Screenshot from 2026-03-20 13-13-29.png>)
