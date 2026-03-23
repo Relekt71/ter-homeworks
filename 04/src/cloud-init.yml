@@ -1,0 +1,44 @@
+#cloud-config
+users:
+  - name: ubuntu
+    groups: sudo
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - nginx
+  - vim
+  - curl
+  - htop
+  - git
+
+runcmd:
+  - systemctl enable nginx
+  - systemctl start nginx
+  - echo "Welcome to ${vm_name} - ${vm_project} VM" | sudo tee /var/www/html/index.html
+  - systemctl status nginx --no-pager
+
+write_files:
+  - path: /etc/nginx/sites-available/default
+    content: |
+      server {
+          listen 80;
+          server_name _;
+          root /var/www/html;
+          index index.html;
+          
+          location / {
+              try_files $uri $uri/ =404;
+          }
+          
+          location /status {
+              stub_status;
+              allow 127.0.0.1;
+              deny all;
+          }
+      }

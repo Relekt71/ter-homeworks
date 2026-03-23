@@ -33,6 +33,16 @@ variable "vpc_name" {
 
 ###common vars
 
+variable "token_path" {
+  type        = string
+  description = "Token Path"
+}
+
+variable "vms_ssh_root_key_path" {
+  type        = string
+  description = "SSH Key"
+}
+
 variable "vms_ssh_root_key" {
   type        = string
   default     = "your_ssh_ed25519_key"
