@@ -15,30 +15,50 @@ packages:
   - vim
   - curl
   - htop
-  - git
-
-runcmd:
-  - systemctl enable nginx
-  - systemctl start nginx
-  - echo "Welcome to ${vm_name} - ${vm_project} VM" | sudo tee /var/www/html/index.html
-  - systemctl status nginx --no-pager
 
 write_files:
   - path: /etc/nginx/sites-available/default
     content: |
       server {
-          listen 80;
-          server_name _;
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          
           root /var/www/html;
           index index.html;
+          
+          server_name _;
           
           location / {
               try_files $uri $uri/ =404;
           }
-          
-          location /status {
-              stub_status;
-              allow 127.0.0.1;
-              deny all;
-          }
       }
+    permissions: '0644'
+
+runcmd:
+  # Создаем директорию и файлы
+  - mkdir -p /var/www/html
+  - chown -R www-data:www-data /var/www/html
+  - chmod -R 755 /var/www/html
+  
+  # Создаем index.html
+  - echo "Welcome to ${vm_name} - ${vm_project} VM" | tee /var/www/html/index.html
+  
+  # Удаляем дефолтную конфигурацию если есть конфликт
+  - rm -f /etc/nginx/sites-enabled/default
+  - ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+  
+  # Проверяем конфигурацию
+  - nginx -t
+  
+  # Перезапускаем nginx
+  - systemctl enable nginx
+  - systemctl restart nginx
+  
+  # Ждем и проверяем
+  - sleep 3
+  - systemctl status nginx --no-pager
+  - curl http://localhost || echo "Waiting for nginx..."
+  - sleep 2
+  - curl http://localhost
+
+final_message: "VM ${vm_name} is ready with nginx on port 80"

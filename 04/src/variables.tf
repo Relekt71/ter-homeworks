@@ -1,8 +1,4 @@
 ###cloud vars
-variable "token" {
-  type        = string
-  description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
-}
 
 variable "cloud_id" {
   type        = string
@@ -19,6 +15,7 @@ variable "default_zone" {
   default     = "ru-central1-a"
   description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
 }
+
 variable "default_cidr" {
   type        = list(string)
   default     = ["10.0.1.0/24"]
@@ -36,11 +33,13 @@ variable "vpc_name" {
 variable "token_path" {
   type        = string
   description = "Token Path"
+  default     = "~/.authorized_key.json"
 }
 
 variable "vms_ssh_root_key_path" {
   type        = string
-  description = "SSH Key"
+  description = "SSH Key path"
+  default     = "~/.ssh/id_ed25519.pub"
 }
 
 variable "vms_ssh_root_key" {
@@ -62,6 +61,3 @@ variable "vm_db_name" {
   default     = "netology-develop-platform-db"
   description = "example vm_db_ prefix"
 }
-
-
-
