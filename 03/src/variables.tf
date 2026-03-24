@@ -1,71 +1,140 @@
-###cloud vars
-variable "token" {
+### Cloud variables
+variable "token_path" {
   type        = string
-  description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
-  default = "/home/relekt/tokens/token.json"
+  description = "Path to service account key file"
 }
 
 variable "cloud_id" {
   type        = string
-  description = "https://cloud.yandex.ru/docs/resource-manager/operations/cloud/get-id"
+  description = "Cloud ID"
 }
 
 variable "folder_id" {
   type        = string
-  description = "https://cloud.yandex.ru/docs/resource-manager/operations/folder/get-id"
+  description = "Folder ID"
 }
 
 variable "default_zone" {
   type        = string
-  default     = "ru-central1-a"
-  description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
+  description = "Default availability zone"
 }
+
 variable "default_cidr" {
   type        = list(string)
-  default     = ["10.0.1.0/24"]
-  description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
+  description = "CIDR block for subnet"
 }
 
 variable "vpc_name" {
   type        = string
-  default     = "develop"
-  description = "VPC network&subnet name"
+  description = "VPC network name"
 }
 
-variable "token_path" {
-  type        = string
-  description = "Token Path"
-}
-
+### SSH variables
 variable "vms_ssh_root_key_path" {
   type        = string
-  description = "SSH Key"
+  description = "Path to SSH public key"
 }
 
-variable "each_vm" {
-  description = "Configuration for database VMs"
+### OS Image variables
+variable "image_family" {
+  type        = string
+  description = "Family of the OS image"
+}
+
+variable "boot_disk_size" {
+  type        = number
+  description = "Boot disk size in GB"
+  
+  validation {
+    condition     = var.boot_disk_size >= 10
+    error_message = "Boot disk size must be at least 10 GB."
+  }
+}
+
+### Web servers variables (count)
+variable "web_instances" {
+  description = "Web servers configuration"
+  type = object({
+    count          = number
+    platform_id    = string
+    cpu            = number
+    ram            = number
+    core_fraction  = number
+    preemptible    = bool
+    disk_size      = number
+  })
+}
+
+### Database servers variables (for_each)
+variable "database_instances" {
+  description = "Database instances configuration"
   type = list(object({
     vm_name       = string
+    platform_id   = string
     cpu           = number
     ram           = number
+    core_fraction = number
     disk_volume   = number
-    platform_id   = optional(string, "standard-v3")
-    core_fraction = optional(number, 20)
-    preemptible   = optional(bool, true)
-    image_id      = optional(string, "fd80rt9kfkrpsq4dh9c9")
+    preemptible   = bool
   }))
-  default = [
-    {
-      vm_name     = "main"
-      cpu         = 2
-      ram         = 4
-      disk_volume = 20
-    },
-    {
-      vm_name     = "replica"
-      cpu         = 4
-      ram         = 8
-      disk_volume = 30
-    }
-  ]
+}
+
+### Storage server variables
+variable "storage_instance" {
+  description = "Storage server configuration"
+  type = object({
+    name           = string
+    platform_id    = string
+    cpu            = number
+    ram            = number
+    core_fraction  = number
+    preemptible    = bool
+    boot_disk_size = number
+  })
+}
+
+variable "storage_disks" {
+  description = "Additional storage disks configuration"
+  type = object({
+    count      = number
+    type       = string
+    size       = number
+  })
+  
+  validation {
+    condition     = var.storage_disks.size >= 1
+    error_message = "Additional disk size must be at least 1 GB."
+  }
+}
+
+### Security group variables
+variable "security_group_ingress" {
+  description = "Ingress security rules"
+  type = list(object({
+    protocol       = string
+    description    = string
+    v4_cidr_blocks = list(string)
+    port           = optional(number)
+    from_port      = optional(number)
+    to_port        = optional(number)
+  }))
+}
+
+variable "security_group_egress" {
+  description = "Egress security rules"
+  type = list(object({
+    protocol       = string
+    description    = string
+    v4_cidr_blocks = list(string)
+    port           = optional(number)
+    from_port      = optional(number)
+    to_port        = optional(number)
+  }))
+}
+
+### Ansible inventory variables
+variable "inventory_template_path" {
+  type        = string
+  description = "Path to Ansible inventory template"
+  default     = "inventory.tftpl"
 }

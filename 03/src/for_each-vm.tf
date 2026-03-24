@@ -1,8 +1,6 @@
-# for_each-vm.tf
-
 resource "yandex_compute_instance" "db" {
   for_each = {
-    for vm in var.each_vm : vm.vm_name => vm
+    for vm in var.database_instances : vm.vm_name => vm
   }
   
   name        = each.value.vm_name
@@ -17,7 +15,7 @@ resource "yandex_compute_instance" "db" {
 
   boot_disk {
     initialize_params {
-      image_id = each.value.image_id
+      image_id = data.yandex_compute_image.os.id
       size     = each.value.disk_volume
     }
   }
@@ -35,5 +33,4 @@ resource "yandex_compute_instance" "db" {
   scheduling_policy {
     preemptible = each.value.preemptible
   }
-
 }

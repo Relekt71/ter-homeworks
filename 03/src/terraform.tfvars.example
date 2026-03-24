@@ -1,1 +1,99 @@
-# Example variables file
+# Example terraform.tfvars file
+
+# Cloud credentials
+cloud_id     = "your-cloud-id"
+folder_id    = "your-folder-id"
+token_path   = "/path/to/token.json"
+vms_ssh_root_key_path = "/path/to/ssh-key.pub"
+
+# Default zone and network
+default_zone = "ru-central1-a"
+default_cidr = ["10.0.1.0/24"]
+vpc_name     = "develop"
+
+# OS Image
+image_family   = "ubuntu-2204-lts"
+boot_disk_size = 10
+
+# Web servers configuration (count loop)
+web_instances = {
+  count          = 2
+  platform_id    = "standard-v3"
+  cpu            = 2
+  ram            = 2
+  core_fraction  = 20
+  preemptible    = true
+  disk_size      = 10
+}
+
+# Database instances configuration (for_each loop)
+database_instances = [
+  {
+    vm_name       = "main"
+    platform_id   = "standard-v3"
+    cpu           = 2
+    ram           = 4
+    core_fraction = 20
+    disk_volume   = 20
+    preemptible   = true
+  },
+  {
+    vm_name       = "replica"
+    platform_id   = "standard-v3"
+    cpu           = 1
+    ram           = 2
+    core_fraction = 20
+    disk_volume   = 15
+    preemptible   = true
+  }
+]
+
+# Storage server configuration
+storage_instance = {
+  name           = "storage"
+  platform_id    = "standard-v3"
+  cpu            = 2
+  ram            = 2
+  core_fraction  = 20
+  preemptible    = true
+  boot_disk_size = 10
+}
+
+# Additional disks for storage
+storage_disks = {
+  count = 3
+  type  = "network-hdd"
+  size  = 1
+}
+
+# Security group rules
+security_group_ingress = [
+  {
+    protocol       = "TCP"
+    description    = "Allow SSH"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 22
+  },
+  {
+    protocol       = "TCP"
+    description    = "Allow HTTP"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 80
+  },
+  {
+    protocol       = "TCP"
+    description    = "Allow HTTPS"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 443
+  }
+]
+
+security_group_egress = [
+  {
+    protocol       = "TCP"
+    description    = "Allow all outgoing traffic"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    from_port      = 0
+    to_port        = 65535
+  }
+]

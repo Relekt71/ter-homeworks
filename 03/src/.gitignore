@@ -1,54 +1,13 @@
-# Local .terraform directories and files
-**/.terraform/*
-.terraform*
-
-!.terraformrc
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# own secret vars store.
-personal.auto.tfvars
-key.json
-terraform.tfvars
-terraform.tfstate.backup
-
-# Local .terraform directories
-**/.terraform/*
-*.terraform.lock.hcl
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
+# Terraform files
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
 *.tfstate.backup
 
-# Crash log files
-crash.log
-crash.*.log
+# Secret variables
+terraform.tfvars
+*.auto.tfvars
 
-# Exclude all .tfvars files, which are likely to contain sentitive data
-*.tfvars
-*.tfvars.json
-
-# Ignore inventory files
+# Generated files
 inventory.ini
-inventory.yaml
-for.ini
-hosts.yaml
-
-# Ignore override files
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# Ignore CLI configuration files
-.terraformrc
-terraform.rc
-
-# Ignore sensitive files
-*.pem
-*.key
-*.pub
-token.json

@@ -1,33 +1,33 @@
+# Создаем дополнительные диски
 resource "yandex_compute_disk" "storage_disks" {
-  count = 3
+  count = var.storage_disks.count
   
   name       = "storage-disk-${count.index + 1}"
-  type       = "network-hdd"
+  type       = var.storage_disks.type
   zone       = var.default_zone
-  size       = 5
-  image_id   = "fd80rt9kfkrpsq4dh9c9" # Ubuntu 20.04 LTS
+  size       = var.storage_disks.size
 
   description = "Additional disk for storage VM ${count.index + 1}"
 }
 
+# Создаем storage ВМ
 resource "yandex_compute_instance" "storage" {
-  name        = "storage"
-  platform_id = "standard-v3"
+  name        = var.storage_instance.name
+  platform_id = var.storage_instance.platform_id
   zone        = var.default_zone
 
   resources {
-    cores         = 2
-    memory        = 2
-    core_fraction = 20
+    cores         = var.storage_instance.cpu
+    memory        = var.storage_instance.ram
+    core_fraction = var.storage_instance.core_fraction
   }
 
   boot_disk {
     initialize_params {
-      image_id = "fd80rt9kfkrpsq4dh9c9" # Ubuntu 20.04 LTS
-      size     = 10
+      image_id = data.yandex_compute_image.os.id
+      size     = var.storage_instance.boot_disk_size
     }
   }
-
   
   dynamic "secondary_disk" {
     for_each = yandex_compute_disk.storage_disks
@@ -47,7 +47,7 @@ resource "yandex_compute_instance" "storage" {
   }
 
   scheduling_policy {
-    preemptible = true
+    preemptible = var.storage_instance.preemptible
   }
 
   depends_on = [yandex_compute_disk.storage_disks]

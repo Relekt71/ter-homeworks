@@ -1,20 +1,20 @@
 resource "yandex_compute_instance" "web" {
-  count = 2
+  count = var.web_instances.count
   
   name        = "web-${count.index + 1}"
-  platform_id = "standard-v3"
+  platform_id = var.web_instances.platform_id
   zone        = var.default_zone
 
   resources {
-    cores         = 2
-    memory        = 2
-    core_fraction = 20
+    cores         = var.web_instances.cpu
+    memory        = var.web_instances.ram
+    core_fraction = var.web_instances.core_fraction
   }
 
   boot_disk {
     initialize_params {
-      image_id = "fd80rt9kfkrpsq4dh9c9" 
-      size     = 10
+      image_id = data.yandex_compute_image.os.id
+      size     = var.web_instances.disk_size
     }
   }
 
@@ -29,7 +29,7 @@ resource "yandex_compute_instance" "web" {
   }
 
   scheduling_policy {
-    preemptible = true
+    preemptible = var.web_instances.preemptible
   }
 
   depends_on = [yandex_compute_instance.db]
