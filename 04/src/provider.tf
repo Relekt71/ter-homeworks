@@ -5,6 +5,10 @@ terraform {
       source  = "yandex-cloud/yandex"
       version = "~> 0.92"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
+    }
   }
 }
 

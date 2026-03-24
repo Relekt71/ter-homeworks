@@ -14,8 +14,9 @@ packages:
   - nginx
   - curl
   - htop
+  - vim
 
 runcmd:
   - systemctl enable nginx
   - systemctl start nginx
-  - echo "Welcome to ${username} VM" | sudo tee /var/www/html/index.html
+  - echo "<h1>Welcome to ${username} VM</h1>" | sudo tee /var/www/html/index.html

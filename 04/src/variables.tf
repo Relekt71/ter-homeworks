@@ -1,24 +1,27 @@
+# ============================================
+# Секретные переменные (из secrets.auto.tfvars)
+# ============================================
 variable "service_account_key_file" {
   description = "Path to service account key file (JSON)"
   type        = string
   sensitive   = true
-  default     = "/home/relekt/tokens/token.json"
 }
 
 variable "cloud_id" {
   description = "Yandex Cloud ID"
   type        = string
   sensitive   = true
-  default     = "b1gecg7g9vaf2vm3jlbv"
 }
 
 variable "folder_id" {
   description = "Yandex Cloud folder ID"
   type        = string
   sensitive   = true
-  default     = "b1gi7d9oo4tihh61hkeb"
 }
 
+# ============================================
+# Общие переменные (из terraform.tfvars)
+# ============================================
 variable "zone" {
   description = "Availability zone"
   type        = string
@@ -34,9 +37,24 @@ variable "vm_username" {
 variable "ssh_key_path" {
   description = "Path to SSH public key file"
   type        = string
-  default     = "/home/relekt/github.pub"
+  default     = "~/.ssh/id_rsa.pub"
 }
 
+variable "image_id" {
+  description = "OS image ID (Ubuntu 20.04)"
+  type        = string
+  default     = "fd8kipad7p3bcne5l2bj"
+}
+
+variable "platform_id" {
+  description = "Platform ID"
+  type        = string
+  default     = "standard-v2"
+}
+
+# ============================================
+# Переменные для VPC (Задания 1-3)
+# ============================================
 variable "vpc_name" {
   description = "VPC network name"
   type        = string
@@ -49,14 +67,47 @@ variable "vpc_cidr" {
   default     = "10.0.1.0/24"
 }
 
-variable "image_id" {
-  description = "OS image ID"
+# ============================================
+# Переменные для MySQL (Задание 5*)
+# ============================================
+variable "mysql_cluster_name" {
+  description = "MySQL cluster name"
   type        = string
-  default     = "fd8kipad7p3bcne5l2bj"
+  default     = "example-mysql-cluster"
 }
 
-variable "platform_id" {
-  description = "Platform ID"
+variable "mysql_ha" {
+  description = "High availability mode for MySQL"
+  type        = bool
+  default     = false
+}
+
+variable "mysql_database_name" {
+  description = "MySQL database name"
   type        = string
-  default     = "standard-v2"
+  default     = "testdb"
+}
+
+variable "mysql_username" {
+  description = "MySQL username"
+  type        = string
+  default     = "appuser"
+}
+
+variable "mysql_resource_preset" {
+  description = "MySQL resource preset"
+  type        = string
+  default     = "b2.medium"
+}
+
+variable "mysql_disk_size" {
+  description = "MySQL disk size in GB"
+  type        = number
+  default     = 10
+}
+
+variable "mysql_version" {
+  description = "MySQL version"
+  type        = string
+  default     = "8.0"
 }

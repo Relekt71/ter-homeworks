@@ -22,11 +22,5 @@ variable "password" {
 variable "roles" {
   description = "Database roles for the user"
   type        = list(string)
-  default     = []  # Доступные роли: ALL, DDL, DML, etc.
-}
-
-variable "global_permissions" {
-  description = "Global permissions for the user"
-  type        = list(string)
-  default     = []
+  default     = ["ALL"]
 }

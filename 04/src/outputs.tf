@@ -1,5 +1,6 @@
-# outputs.tf
-
+# ============================================
+# Outputs для VPC и VM (Задания 1-3)
+# ============================================
 output "vpc_info" {
   description = "VPC information"
   value = {
@@ -17,6 +18,7 @@ output "marketing_vm" {
     name        = module.marketing_vm.vm_name
     external_ip = module.marketing_vm.external_ip
     internal_ip = module.marketing_vm.internal_ip
+    labels      = module.marketing_vm.labels
   }
 }
 
@@ -26,5 +28,6 @@ output "analytics_vm" {
     name        = module.analytics_vm.vm_name
     external_ip = module.analytics_vm.external_ip
     internal_ip = module.analytics_vm.internal_ip
+    labels      = module.analytics_vm.labels
   }
 }
