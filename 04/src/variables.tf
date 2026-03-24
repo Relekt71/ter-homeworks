@@ -1,63 +1,52 @@
-###cloud vars
-
-variable "cloud_id" {
+# variables.tf
+variable "service_account_key_file" {
+  description = "Path to service account key file (JSON)"
   type        = string
-  description = "https://cloud.yandex.ru/docs/resource-manager/operations/cloud/get-id"
-}
-
-variable "folder_id" {
-  type        = string
-  description = "https://cloud.yandex.ru/docs/resource-manager/operations/folder/get-id"
-}
-
-variable "default_zone" {
-  type        = string
-  default     = "ru-central1-a"
-  description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
-}
-
-variable "default_cidr" {
-  type        = list(string)
-  default     = ["10.0.1.0/24"]
-  description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
-}
-
-variable "vpc_name" {
-  type        = string
-  default     = "develop"
-  description = "VPC network&subnet name"
-}
-
-###common vars
-
-variable "token_path" {
-  type        = string
-  description = "Token Path"
-  default     = "~/.authorized_key.json"
+  default     = "/home/relekt/tokens/token.json"
 }
 
 variable "vms_ssh_root_key_path" {
+  description = "Path to SSH public key file"
   type        = string
-  description = "SSH Key path"
-  default     = "~/.ssh/id_ed25519.pub"
+  default     = "/home/relekt/github.pub"
 }
 
-variable "vms_ssh_root_key" {
+variable "cloud_id" {
+  description = "Yandex Cloud ID"
   type        = string
-  default     = "your_ssh_ed25519_key"
-  description = "ssh-keygen -t ed25519"
 }
 
-###example vm_web var
-variable "vm_web_name" {
+variable "folder_id" {
+  description = "Yandex Cloud folder ID"
   type        = string
-  default     = "netology-develop-platform-web"
-  description = "example vm_web_ prefix"
 }
 
-###example vm_db var
-variable "vm_db_name" {
+variable "zone" {
+  description = "Availability zone"
   type        = string
-  default     = "netology-develop-platform-db"
-  description = "example vm_db_ prefix"
+  default     = "ru-central1-a"
+}
+
+variable "vm_username" {
+  description = "Username for VMs"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "image_id" {
+  description = "OS image ID"
+  type        = string
+  default     = "fd8kipad7p3bcne5l2bj"
+}
+
+variable "platform_id" {
+  description = "Platform ID"
+  type        = string
+  default     = "standard-v2"
+}
+
+variable "vpc_name" {
+  description = "VPC network name"
+  type        = string
+  default     = "develop"
 }

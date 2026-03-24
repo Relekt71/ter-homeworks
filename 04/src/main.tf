@@ -1,198 +1,127 @@
-# main.tf
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     yandex = {
-      source = "yandex-cloud/yandex"
+      source  = "yandex-cloud/yandex"
+      version = "~> 0.87"
     }
-    template = {
-      source  = "hashicorp/template"
-      version = "~> 2.2"
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
     }
   }
-  required_version = ">= 1.0"
-}
-
-provider "yandex" {
-  cloud_id                 = var.cloud_id
-  folder_id                = var.folder_id
-  service_account_key_file = file(var.token_path)
-  zone                     = var.default_zone
 }
 
 locals {
-  ssh_public_key = file(var.vms_ssh_root_key_path)
+  service_account_key = file(var.service_account_key_file)
+  ssh_key             = file(var.vms_ssh_root_key_path)
 }
 
-# Создание VPC сети
-resource "yandex_vpc_network" "develop" {
-  name = var.vpc_name
+provider "yandex" {
+  service_account_key_file = var.service_account_key_file
+  cloud_id                  = var.cloud_id
+  folder_id                 = var.folder_id
+  zone                      = var.zone
 }
 
-# Создание подсети в зоне a
-resource "yandex_vpc_subnet" "develop_a" {
-  name           = "${var.vpc_name}-ru-central1-a"
-  zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.develop.id
-  v4_cidr_blocks = ["10.0.1.0/24"]
+# Генерируем случайный пароль
+resource "random_password" "mysql_password" {
+  length  = 16
+  special = false
+  numeric = true
+  upper   = true
+  lower   = true
 }
 
-# Создание подсети в зоне b
-resource "yandex_vpc_subnet" "develop_b" {
-  name           = "${var.vpc_name}-ru-central1-b"
-  zone           = "ru-central1-b"
-  network_id     = yandex_vpc_network.develop.id
-  v4_cidr_blocks = ["10.0.2.0/24"]
-}
-
-# Cloud-init для marketing ВМ
-data "template_file" "cloudinit_marketing" {
-  template = file("${path.module}/cloud-init.yml")
+# Создаем новую VPC сеть для MySQL кластера
+resource "yandex_vpc_network" "mysql_network" {
+  name        = "mysql-network"
+  description = "Network for MySQL cluster"
   
-  vars = {
-    ssh_public_key = local.ssh_public_key
-    vm_name        = "marketing-vm"
-    vm_project     = "marketing"
+  labels = {
+    environment = "dev"
+    managed_by  = "terraform"
+    purpose     = "mysql-cluster"
   }
 }
 
-# Cloud-init для analytics ВМ
-data "template_file" "cloudinit_analytics" {
-  template = file("${path.module}/cloud-init.yml")
+# Создаем подсеть для MySQL кластера
+resource "yandex_vpc_subnet" "mysql_subnet" {
+  name           = "mysql-subnet"
+  description    = "Subnet for MySQL cluster"
+  zone           = var.zone
+  network_id     = yandex_vpc_network.mysql_network.id
+  v4_cidr_blocks = ["10.2.0.0/24"]
   
-  vars = {
-    ssh_public_key = local.ssh_public_key
-    vm_name        = "analytics-vm"
-    vm_project     = "analytics"
+  labels = {
+    environment = "dev"
+    managed_by  = "terraform"
+    purpose     = "mysql-cluster"
   }
 }
 
-# ВМ для marketing проекта
-module "marketing_vm" {
-  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  env_name       = "marketing"
-  network_id     = yandex_vpc_network.develop.id
-  subnet_zones   = ["ru-central1-a"]
-  subnet_ids     = [yandex_vpc_subnet.develop_a.id]
-  instance_name  = "marketing-vm"
-  instance_count = 1
-  image_family   = "ubuntu-2004-lts"
-  public_ip      = true
-
-  labels = { 
-    owner   = "i.ivanov"
-    project = "marketing"
-    env     = "prod"
-    purpose = "web"
-  }
-
-  metadata = {
-    user-data          = data.template_file.cloudinit_marketing.rendered
-    serial-port-enable = 1
-  }
+# Создаем MySQL кластер с одним хостом
+module "mysql_cluster" {
+  source = "./modules/mysql_cluster"
+  
+  cluster_name = "example-mysql-cluster"
+  environment  = "PRESTABLE"
+  network_id   = yandex_vpc_network.mysql_network.id
+  subnet_id    = yandex_vpc_subnet.mysql_subnet.id
+  zone         = var.zone
+  ha           = true  
+  
+  # Минимальная конфигурация для экономии
+  resource_preset_id = "b2.medium"  # 2 vCPU, 4 GB RAM
+  disk_type_id       = "network-hdd"
+  disk_size          = 10
+  
+  # Отключаем ненужные опции для экономии
+  access_data_lens     = false
+  access_web_sql       = false
+  access_data_transfer = false
+  performance_diagnostics_enabled = false
 }
 
-# ВМ для analytics проекта
-module "analytics_vm" {
-  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  env_name       = "analytics"
-  network_id     = yandex_vpc_network.develop.id
-  subnet_zones   = ["ru-central1-b"]
-  subnet_ids     = [yandex_vpc_subnet.develop_b.id]
-  instance_name  = "analytics-vm"
-  instance_count = 1
-  image_family   = "ubuntu-2004-lts"
-  public_ip      = true
-
-  labels = { 
-    owner   = "i.ivanov"
-    project = "analytics"
-    env     = "prod"
-    purpose = "data-processing"
-  }
-
-  metadata = {
-    user-data          = data.template_file.cloudinit_analytics.rendered
-    serial-port-enable = 1
-  }
+# Добавляем базу данных и пользователя
+module "mysql_db" {
+  source = "./modules/mysql_db_user"
+  
+  cluster_id    = module.mysql_cluster.cluster_id
+  database_name = "testdb"
+  username      = "appuser"
+  password      = random_password.mysql_password.result
+  roles         = ["ALL"]
 }
 
-# Вывод информации используя правильные атрибуты модуля
-output "marketing_vm_ip" {
-  description = "External IP address of marketing VM"
-  value       = module.marketing_vm.external_ip_address[0]
-}
-
-output "analytics_vm_ip" {
-  description = "External IP address of analytics VM"
-  value       = module.analytics_vm.external_ip_address[0]
-}
-
-output "marketing_vm_internal_ip" {
-  description = "Internal IP address of marketing VM"
-  value       = module.marketing_vm.internal_ip_address[0]
-}
-
-output "analytics_vm_internal_ip" {
-  description = "Internal IP address of analytics VM"
-  value       = module.analytics_vm.internal_ip_address[0]
-}
-
-output "marketing_vm_fqdn" {
-  description = "FQDN of marketing VM"
-  value       = module.marketing_vm.fqdn[0]
-}
-
-output "analytics_vm_fqdn" {
-  description = "FQDN of analytics VM"
-  value       = module.analytics_vm.fqdn[0]
-}
-
-output "vms_info" {
-  description = "Complete information about all VMs"
+# Outputs
+output "mysql_network_info" {
+  description = "MySQL VPC network information"
   value = {
-    marketing = {
-      name        = "marketing-vm"
-      fqdn        = module.marketing_vm.fqdn[0]
-      external_ip = module.marketing_vm.external_ip_address[0]
-      internal_ip = module.marketing_vm.internal_ip_address[0]
-      labels      = module.marketing_vm.labels
-    }
-    analytics = {
-      name        = "analytics-vm"
-      fqdn        = module.analytics_vm.fqdn[0]
-      external_ip = module.analytics_vm.external_ip_address[0]
-      internal_ip = module.analytics_vm.internal_ip_address[0]
-      labels      = module.analytics_vm.labels
-    }
+    network_id   = yandex_vpc_network.mysql_network.id
+    network_name = yandex_vpc_network.mysql_network.name
+    subnet_id    = yandex_vpc_subnet.mysql_subnet.id
+    subnet_cidr  = yandex_vpc_subnet.mysql_subnet.v4_cidr_blocks[0]
   }
 }
 
-# Remote state outputs
-output "out" {
-  description = "Output for remote state"
+output "mysql_cluster_info" {
+  description = "MySQL cluster information"
+  value       = module.mysql_cluster.cluster_info
+}
+
+output "mysql_connection" {
+  description = "MySQL connection information"
   value = {
-    marketing = {
-      name        = "marketing-vm"
-      fqdn        = module.marketing_vm.fqdn[0]
-      external_ip = module.marketing_vm.external_ip_address[0]
-      internal_ip = module.marketing_vm.internal_ip_address[0]
-      labels      = module.marketing_vm.labels
-    }
-    analytics = {
-      name        = "analytics-vm"
-      fqdn        = module.analytics_vm.fqdn[0]
-      external_ip = module.analytics_vm.external_ip_address[0]
-      internal_ip = module.analytics_vm.internal_ip_address[0]
-      labels      = module.analytics_vm.labels
-    }
+    cluster_id   = module.mysql_cluster.cluster_id
+    database     = module.mysql_db.database_name
+    username     = module.mysql_db.username
+    password     = random_password.mysql_password.result
   }
+  sensitive = true
 }
 
-# Дополнительный вывод для совместимости с вашим существующим кодом
-output "vms_list" {
-  description = "List of VM FQDNs"
-  value = [
-    module.marketing_vm.fqdn[0],
-    module.analytics_vm.fqdn[0]
-  ]
+output "mysql_hosts" {
+  description = "MySQL cluster hosts"
+  value       = module.mysql_cluster.hosts
 }
