@@ -1,13 +1,17 @@
-# Local .terraform directories and files
-**/.terraform/*
-.terraform*
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+*.tfvars.json
 
-!.terraformrc
+# Secrets
+secrets.auto.tfvars
+*.secret
 
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# own secret vars store.
-personal.auto.tfvars
-terraform.tfvars
+# Local
+*.log
+*.bak
+.idea/
+.vscode/
