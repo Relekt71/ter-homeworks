@@ -1,20 +1,19 @@
 output "cluster_id" {
-  value = yandex_mdb_mysql_cluster.this.id
+  description = "ID of the MySQL cluster"
+  value       = yandex_mdb_mysql_cluster.this.id
 }
 
 output "cluster_name" {
-  value = yandex_mdb_mysql_cluster.this.name
-}
-
-output "status" {
-  value = yandex_mdb_mysql_cluster.this.status
+  description = "Name of the MySQL cluster"
+  value       = yandex_mdb_mysql_cluster.this.name
 }
 
 output "hosts" {
-  value = [
-    for host in yandex_mdb_mysql_cluster.this.host : {
-      fqdn = host.fqdn
-      zone = host.zone
-    }
-  ]
+  description = "List of cluster hosts"
+  value       = yandex_mdb_mysql_cluster.this.host
+}
+
+output "ha_enabled" {
+  description = "Whether HA is enabled"
+  value       = var.ha_enabled
 }

@@ -19,11 +19,11 @@ resource "yandex_mdb_mysql_database" "this" {
 
 resource "yandex_mdb_mysql_user" "this" {
   cluster_id = var.cluster_id
-  name       = var.username
-  password   = var.password
-
+  name       = var.user_name
+  password   = var.user_password
+  
   permission {
     database_name = yandex_mdb_mysql_database.this.name
-    roles         = var.roles
+    roles         = var.user_roles
   }
 }

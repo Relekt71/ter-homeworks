@@ -18,6 +18,8 @@ resource "yandex_mdb_mysql_cluster" "this" {
   environment = var.environment
   network_id  = var.network_id
   version     = var.mysql_version
+  
+  labels = var.labels
 
   resources {
     resource_preset_id = var.resource_preset_id
@@ -26,21 +28,17 @@ resource "yandex_mdb_mysql_cluster" "this" {
   }
 
   dynamic "host" {
-    for_each = var.ha ? [1, 2] : [1]
+    for_each = range(var.ha_enabled ? 2 : 1)
     content {
-      zone      = var.zone
-      subnet_id = var.subnet_id
+      zone      = var.subnet_ids[0].zone
+      subnet_id = var.subnet_ids[0].id
     }
   }
 
-  access {
-    data_lens     = false
-    web_sql       = false
-    data_transfer = false
+  backup_window_start {
+    hours   = var.backup_window_hours
+    minutes = var.backup_window_minutes
   }
 
-  backup_window_start {
-    hours   = 1
-    minutes = 0
-  }
+  backup_retain_period_days = var.backup_retain_period
 }

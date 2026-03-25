@@ -1,31 +1,92 @@
 # ============================================
-# Секретные переменные (из secrets.auto.tfvars)
+# Общие переменные
 # ============================================
+
 variable "service_account_key_file" {
-  description = "Path to service account key file (JSON)"
+  description = "Path to service account key file"
   type        = string
-  sensitive   = true
 }
 
 variable "cloud_id" {
   description = "Yandex Cloud ID"
   type        = string
-  sensitive   = true
 }
 
 variable "folder_id" {
   description = "Yandex Cloud folder ID"
   type        = string
-  sensitive   = true
+}
+
+variable "zone" {
+  description = "Default availability zone"
+  type        = string
+  default     = "ru-central1-a"
+}
+
+variable "common_labels" {
+  description = "Common labels for all resources"
+  type        = map(string)
+  default = {
+    managed_by = "terraform"
+    owner      = "devops"
+    course     = "terraform-hw"
+  }
 }
 
 # ============================================
-# Общие переменные (из terraform.tfvars)
+# Задание 2 и 4*: VPC переменные
 # ============================================
-variable "zone" {
-  description = "Availability zone"
+
+variable "vpc_dev_name" {
+  description = "Development VPC name"
   type        = string
-  default     = "ru-central1-a"
+  default     = "develop"
+}
+
+variable "vpc_dev_subnets" {
+  description = "Subnets for development VPC (Task 2)"
+  type = list(object({
+    zone = string
+    cidr = string
+  }))
+  default = [
+    { zone = "ru-central1-a", cidr = "10.0.1.0/24" }
+  ]
+}
+
+variable "vpc_prod_name" {
+  description = "Production VPC name"
+  type        = string
+  default     = "production"
+}
+
+variable "vpc_prod_subnets" {
+  description = "Subnets for production VPC (Task 4* - all zones)"
+  type = list(object({
+    zone = string
+    cidr = string
+  }))
+  default = [
+    { zone = "ru-central1-a", cidr = "10.0.2.0/24" },
+    { zone = "ru-central1-b", cidr = "10.0.3.0/24" },
+    { zone = "ru-central1-c", cidr = "10.0.4.0/24" }
+  ]
+}
+
+# ============================================
+# Задание 1: VM переменные
+# ============================================
+
+variable "marketing_vm_name" {
+  description = "Marketing VM name"
+  type        = string
+  default     = "marketing-vm"
+}
+
+variable "analytics_vm_name" {
+  description = "Analytics VM name"
+  type        = string
+  default     = "analytics-vm"
 }
 
 variable "vm_username" {
@@ -34,80 +95,132 @@ variable "vm_username" {
   default     = "ubuntu"
 }
 
-variable "ssh_key_path" {
+variable "ssh_public_key_path" {
   description = "Path to SSH public key file"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
 }
 
-variable "image_id" {
-  description = "OS image ID (Ubuntu 20.04)"
+variable "vm_image_id" {
+  description = "OS image ID for VMs"
   type        = string
-  default     = "fd8kipad7p3bcne5l2bj"
+  default     = "fd8kipad7p3bcne5l2bj" # Ubuntu 20.04
 }
 
-variable "platform_id" {
-  description = "Platform ID"
+variable "vm_platform_id" {
+  description = "Platform ID for VMs"
   type        = string
   default     = "standard-v2"
 }
 
-# ============================================
-# Переменные для VPC (Задания 1-3)
-# ============================================
-variable "vpc_name" {
-  description = "VPC network name"
-  type        = string
-  default     = "develop"
+variable "vm_cores" {
+  description = "Number of CPU cores for VMs"
+  type        = number
+  default     = 2
 }
 
-variable "vpc_cidr" {
-  description = "VPC CIDR block"
-  type        = string
-  default     = "10.0.1.0/24"
+variable "vm_memory" {
+  description = "Memory in GB for VMs"
+  type        = number
+  default     = 2
+}
+
+variable "vm_disk_size" {
+  description = "Disk size in GB for VMs"
+  type        = number
+  default     = 10
+}
+
+variable "nginx_port" {
+  description = "Nginx port"
+  type        = number
+  default     = 80
 }
 
 # ============================================
-# Переменные для MySQL (Задание 5*)
+# Задание 5*: MySQL переменные
 # ============================================
+
 variable "mysql_cluster_name" {
-  description = "MySQL cluster name"
+  description = "Name of the MySQL cluster"
   type        = string
   default     = "example-mysql-cluster"
 }
 
-variable "mysql_ha" {
-  description = "High availability mode for MySQL"
+variable "mysql_environment" {
+  description = "Environment for MySQL cluster (PRESTABLE, PRODUCTION)"
+  type        = string
+  default     = "PRESTABLE"
+}
+
+variable "mysql_ha_enabled" {
+  description = "Enable High Availability (true = 2 hosts, false = 1 host)"
   type        = bool
-  default     = false
-}
-
-variable "mysql_database_name" {
-  description = "MySQL database name"
-  type        = string
-  default     = "testdb"
-}
-
-variable "mysql_username" {
-  description = "MySQL username"
-  type        = string
-  default     = "appuser"
-}
-
-variable "mysql_resource_preset" {
-  description = "MySQL resource preset"
-  type        = string
-  default     = "b2.medium"
-}
-
-variable "mysql_disk_size" {
-  description = "MySQL disk size in GB"
-  type        = number
-  default     = 10
+  default     = false  # Начинаем с 1 хоста, потом меняем на true
 }
 
 variable "mysql_version" {
   description = "MySQL version"
   type        = string
   default     = "8.0"
+}
+
+variable "mysql_resource_preset_id" {
+  description = "Resource preset for MySQL hosts (минимальная конфигурация)"
+  type        = string
+  default     = "s2.micro"  # 2 vCPU, 8 GB RAM - минимальная
+}
+
+variable "mysql_disk_type_id" {
+  description = "Disk type for MySQL"
+  type        = string
+  default     = "network-ssd"
+}
+
+variable "mysql_disk_size" {
+  description = "Disk size in GB for MySQL"
+  type        = number
+  default     = 10  # Минимальный размер
+}
+
+variable "mysql_backup_window_hours" {
+  description = "Backup window start hour"
+  type        = number
+  default     = 1
+}
+
+variable "mysql_backup_window_minutes" {
+  description = "Backup window start minute"
+  type        = number
+  default     = 0
+}
+
+variable "mysql_backup_retain_period" {
+  description = "Backup retain period in days"
+  type        = number
+  default     = 7
+}
+
+variable "mysql_database_name" {
+  description = "Name of the database to create"
+  type        = string
+  default     = "testdb"
+}
+
+variable "mysql_user_name" {
+  description = "Name of the database user"
+  type        = string
+  default     = "appuser"
+}
+
+variable "mysql_user_password" {
+  description = "Password for the database user"
+  type        = string
+  sensitive   = true
+  default     = null  # Должен быть задан в terraform.tfvars
+}
+
+variable "mysql_user_roles" {
+  description = "Roles for the database user"
+  type        = list(string)
+  default     = ["ALL"]
 }

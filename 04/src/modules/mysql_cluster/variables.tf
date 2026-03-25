@@ -4,7 +4,7 @@ variable "cluster_name" {
 }
 
 variable "environment" {
-  description = "Environment (PRODUCTION or PRESTABLE)"
+  description = "Environment (PRESTABLE, PRODUCTION)"
   type        = string
   default     = "PRESTABLE"
 }
@@ -14,19 +14,16 @@ variable "network_id" {
   type        = string
 }
 
-variable "subnet_id" {
-  description = "ID of the subnet"
-  type        = string
+variable "subnet_ids" {
+  description = "List of subnet IDs for hosts"
+  type = list(object({
+    id   = string
+    zone = string
+  }))
 }
 
-variable "zone" {
-  description = "Availability zone"
-  type        = string
-  default     = "ru-central1-a"
-}
-
-variable "ha" {
-  description = "High availability mode"
+variable "ha_enabled" {
+  description = "Enable High Availability"
   type        = bool
   default     = false
 }
@@ -38,19 +35,43 @@ variable "mysql_version" {
 }
 
 variable "resource_preset_id" {
-  description = "Resource preset"
+  description = "Resource preset ID"
   type        = string
-  default     = "b2.medium"
+  default     = "s2.micro"
 }
 
 variable "disk_type_id" {
-  description = "Disk type"
+  description = "Disk type ID"
   type        = string
-  default     = "network-hdd"
+  default     = "network-ssd"
 }
 
 variable "disk_size" {
   description = "Disk size in GB"
   type        = number
   default     = 10
+}
+
+variable "backup_window_hours" {
+  description = "Backup window start hour"
+  type        = number
+  default     = 1
+}
+
+variable "backup_window_minutes" {
+  description = "Backup window start minute"
+  type        = number
+  default     = 0
+}
+
+variable "backup_retain_period" {
+  description = "Backup retain period in days"
+  type        = number
+  default     = 7
+}
+
+variable "labels" {
+  description = "Labels for the cluster"
+  type        = map(string)
+  default     = {}
 }

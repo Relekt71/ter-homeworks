@@ -11,11 +11,11 @@ variable "project" {
 variable "username" {
   description = "Username for VM"
   type        = string
-  default     = "ubuntu"
+  default     = "yc-user"
 }
 
 variable "ssh_key" {
-  description = "SSH public key content"
+  description = "SSH public key"
   type        = string
   sensitive   = true
 }
@@ -23,7 +23,6 @@ variable "ssh_key" {
 variable "zone" {
   description = "Availability zone"
   type        = string
-  default     = "ru-central1-a"
 }
 
 variable "subnet_id" {
@@ -34,7 +33,6 @@ variable "subnet_id" {
 variable "image_id" {
   description = "OS image ID"
   type        = string
-  default     = "fd8kipad7p3bcne5l2bj"
 }
 
 variable "platform_id" {
@@ -59,6 +57,18 @@ variable "disk_size" {
   description = "Disk size in GB"
   type        = number
   default     = 10
+}
+
+variable "nat_enabled" {
+  description = "Enable NAT for VM"
+  type        = bool
+  default     = true
+}
+
+variable "nginx_port" {
+  description = "Nginx port"
+  type        = number
+  default     = 80
 }
 
 variable "labels" {

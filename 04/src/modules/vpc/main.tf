@@ -11,27 +11,22 @@ terraform {
     }
   }
 }
-
 resource "yandex_vpc_network" "this" {
   name        = "${var.env_name}-network"
   description = "Network for ${var.env_name} environment"
-  
-  labels = {
-    environment = var.env_name
-    managed_by  = "terraform"
-  }
+  labels      = var.labels
 }
 
 resource "yandex_vpc_subnet" "this" {
-  name           = "${var.env_name}-subnet-${var.zone}"
-  description    = "Subnet for ${var.env_name} in ${var.zone}"
-  zone           = var.zone
-  network_id     = yandex_vpc_network.this.id
-  v4_cidr_blocks = [var.cidr]
+  count = length(var.subnets)
   
-  labels = {
-    environment = var.env_name
-    zone        = var.zone
-    managed_by  = "terraform"
-  }
+  name           = "${var.env_name}-subnet-${var.subnets[count.index].zone}"
+  description    = "Subnet for ${var.env_name} in ${var.subnets[count.index].zone}"
+  zone           = var.subnets[count.index].zone
+  network_id     = yandex_vpc_network.this.id
+  v4_cidr_blocks = [var.subnets[count.index].cidr]
+  
+  labels = merge(var.labels, {
+    zone = var.subnets[count.index].zone
+  })
 }

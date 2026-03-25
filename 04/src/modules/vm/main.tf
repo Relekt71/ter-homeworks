@@ -34,13 +34,14 @@ resource "yandex_compute_instance" "vm" {
 
   network_interface {
     subnet_id = var.subnet_id
-    nat       = true
+    nat       = var.nat_enabled
   }
 
   metadata = {
-    user-data = templatefile("${path.module}/templates/cloud-init.yml.tpl", {
-      username       = var.username
+    user-data = templatefile("${path.module}/cloud-init.yml.tpl", {
       ssh_public_key = var.ssh_key
+      username       = var.username
+      nginx_port     = var.nginx_port
     })
   }
 }
