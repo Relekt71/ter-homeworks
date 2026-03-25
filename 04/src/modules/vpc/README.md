@@ -1,35 +1,55 @@
 <!-- BEGIN_TF_DOCS -->
+# VPC Module for Yandex Cloud
+
+## Описание
+
+Локальный модуль для создания VPC сети и подсети в Yandex Cloud.
+Модуль создает одну сеть и одну подсеть в указанной зоне.
+
+## Требования
+
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| terraform | >= 1.3.0 |
+| random | ~> 3.5 |
+| yandex | ~> 0.92 |
 
-## Modules
-
-No modules.
-
-## Resources
-
-| Name | Type |
-|------|------|
+## Входные переменные
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| additional\_cidr\_blocks | Additional CIDR blocks for the subnet (optional) | `list(string)` | `[]` | no |
-| cidr | CIDR block for the subnet | `string` | n/a | yes |
-| env\_name | Environment name (e.g., develop, production) | `string` | n/a | yes |
-| zone | Yandex Cloud availability zone | `string` | n/a | yes |
+| cidr | CIDR block for subnet | `string` | n/a | yes |
+| env\_name | Environment name | `string` | n/a | yes |
+| zone | Availability zone | `string` | n/a | yes |
+
+## Выходные данные
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| network\_id | ID of the created VPC network |
-| network\_name | Name of the created VPC network |
-| subnet\_cidr | CIDR block of the created subnet |
-| subnet\_id | ID of the created subnet |
-| subnet\_info | Complete information about the subnet |
-| subnet\_name | Name of the created subnet |
-| zone | Availability zone of the subnet |
+| network\_id | n/a |
+| network\_name | n/a |
+| subnet\_cidr | n/a |
+| subnet\_id | n/a |
+| zone | n/a |
+
+## Пример использования
+
+```hcl
+module "vpc_dev" {
+  source   = "./modules/vpc"
+  env_name = "develop"
+  zone     = "ru-central1-a"
+  cidr     = "10.0.1.0/24"
+}
+
+# Использование выходных данных
+resource "yandex_compute_instance" "vm" {
+  subnet_id = module.vpc_dev.subnet_id
+}
 <!-- END_TF_DOCS -->
