@@ -1,5 +1,6 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.12.0"
+  
   required_providers {
     yandex = {
       source  = "yandex-cloud/yandex"
@@ -19,7 +20,6 @@ provider "yandex" {
 # Задание 2 и 4*: VPC модуль
 # ============================================
 
-# Development VPC (Задание 2 - одна подсеть)
 module "vpc_dev" {
   source   = "./modules/vpc"
   env_name = var.vpc_dev_name
@@ -27,7 +27,6 @@ module "vpc_dev" {
   labels   = var.common_labels
 }
 
-# Production VPC (Задание 4* - подсети во всех зонах)
 module "vpc_prod" {
   source   = "./modules/vpc"
   env_name = var.vpc_prod_name
@@ -36,10 +35,85 @@ module "vpc_prod" {
 }
 
 # ============================================
+# Security groups
+# ============================================
+
+module "mysql_sg" {
+  source = "./modules/security_group"
+  
+  name        = "${var.vpc_dev_name}-mysql-sg"
+  description = "Security group for MySQL cluster"
+  network_id  = module.vpc_dev.network_id
+  labels      = var.common_labels
+  
+  ingress_rules = [
+    {
+      protocol       = "TCP"
+      description    = "MySQL port"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = 3306
+    },
+    {
+      protocol       = "TCP"
+      description    = "SSH for management"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = 22
+    }
+  ]
+  
+  egress_rules = [
+    {
+      protocol       = "ANY"
+      description    = "Allow all outbound"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = -1
+    }
+  ]
+}
+
+module "vm_sg" {
+  source = "./modules/security_group"
+  
+  name        = "${var.vpc_dev_name}-vm-sg"
+  description = "Security group for VMs"
+  network_id  = module.vpc_dev.network_id
+  labels      = var.common_labels
+  
+  ingress_rules = [
+    {
+      protocol       = "TCP"
+      description    = "SSH"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = 22
+    },
+    {
+      protocol       = "TCP"
+      description    = "HTTP"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = 80
+    },
+    {
+      protocol       = "TCP"
+      description    = "HTTPS"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = 443
+    }
+  ]
+  
+  egress_rules = [
+    {
+      protocol       = "ANY"
+      description    = "Allow all outbound"
+      v4_cidr_blocks = ["0.0.0.0/0"]
+      port           = -1
+    }
+  ]
+}
+
+# ============================================
 # Задание 1: ВМ с nginx
 # ============================================
 
-# ВМ для marketing (использует VPC dev)
 module "marketing_vm" {
   source = "./modules/vm"
   
@@ -55,7 +129,8 @@ module "marketing_vm" {
   memory      = var.vm_memory
   disk_size   = var.vm_disk_size
   nat_enabled = true
-  nginx_port  = var.nginx_port
+  core_fraction = var.vm_core_fraction
+  security_group_ids = [module.vm_sg.id]
   
   labels = merge(var.common_labels, {
     project = "marketing"
@@ -64,7 +139,6 @@ module "marketing_vm" {
   })
 }
 
-# ВМ для analytics (использует VPC prod)
 module "analytics_vm" {
   source = "./modules/vm"
   
@@ -80,7 +154,8 @@ module "analytics_vm" {
   memory      = var.vm_memory
   disk_size   = var.vm_disk_size
   nat_enabled = true
-  nginx_port  = var.nginx_port
+  core_fraction = var.vm_core_fraction
+  security_group_ids = [module.vm_sg.id]
   
   labels = merge(var.common_labels, {
     project = "analytics"
@@ -93,7 +168,6 @@ module "analytics_vm" {
 # Задание 5*: MySQL кластер
 # ============================================
 
-# Создание MySQL кластера
 module "mysql_cluster" {
   source = "./modules/mysql_cluster"
   
@@ -115,6 +189,7 @@ module "mysql_cluster" {
   backup_window_hours   = var.mysql_backup_window_hours
   backup_window_minutes = var.mysql_backup_window_minutes
   backup_retain_period  = var.mysql_backup_retain_period
+  security_group_ids    = [module.mysql_sg.id]
   
   labels = merge(var.common_labels, {
     task = "task5"
@@ -122,7 +197,6 @@ module "mysql_cluster" {
   })
 }
 
-# Создание базы данных и пользователя
 module "mysql_db_user" {
   source = "./modules/mysql_db_user"
   
