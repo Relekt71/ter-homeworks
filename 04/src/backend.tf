@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket         = "trofimovmc-neto-bucket"
-    key            = "terraform/terraform.tfstate"
+    key            = "terraform.tfstate"
     region         = "ru-central1"
     use_lockfile   = true
     
