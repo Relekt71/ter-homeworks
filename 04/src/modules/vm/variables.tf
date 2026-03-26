@@ -11,7 +11,7 @@ variable "project" {
 variable "username" {
   description = "Username for VM"
   type        = string
-  default     = "yc-user"
+  default     = "ubuntu"
 }
 
 variable "ssh_key" {
@@ -63,6 +63,18 @@ variable "nat_enabled" {
   description = "Enable NAT for VM"
   type        = bool
   default     = true
+}
+
+variable "core_fraction" {
+  description = "Core fraction for VM (5-100)"
+  type        = number
+  default     = 100
+}
+
+variable "security_group_ids" {
+  description = "List of security group IDs"
+  type        = list(string)
+  default     = []
 }
 
 variable "nginx_port" {
