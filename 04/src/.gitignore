@@ -29,5 +29,3 @@ terraform.rc
 *.key
 *.pub
 token.json
-
-config.env

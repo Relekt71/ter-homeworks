@@ -29,6 +29,7 @@ variable "common_labels" {
   default = {
     managed_by = "terraform"
     owner      = "devops"
+    course     = "terraform-hw"
   }
 }
 
@@ -43,7 +44,7 @@ variable "vpc_dev_name" {
 }
 
 variable "vpc_dev_subnets" {
-  description = "Subnets for development VPC"
+  description = "Subnets for development VPC (Task 2)"
   type = list(object({
     zone = string
     cidr = string
@@ -60,7 +61,7 @@ variable "vpc_prod_name" {
 }
 
 variable "vpc_prod_subnets" {
-  description = "Subnets for production VPC"
+  description = "Subnets for production VPC (Task 4* - all zones)"
   type = list(object({
     zone = string
     cidr = string
@@ -68,7 +69,7 @@ variable "vpc_prod_subnets" {
   default = [
     { zone = "ru-central1-a", cidr = "10.0.2.0/24" },
     { zone = "ru-central1-b", cidr = "10.0.3.0/24" },
-    { zone = "ru-central1-d", cidr = "10.0.4.0/24" }
+    { zone = "ru-central1-c", cidr = "10.0.4.0/24" }
   ]
 }
 
@@ -102,7 +103,7 @@ variable "ssh_public_key_path" {
 variable "vm_image_id" {
   description = "OS image ID for VMs"
   type        = string
-  default     = "fd8kipad7p3bcne5l2bj"
+  default     = "fd8kipad7p3bcne5l2bj" # Ubuntu 20.04
 }
 
 variable "vm_platform_id" {
@@ -129,10 +130,10 @@ variable "vm_disk_size" {
   default     = 10
 }
 
-variable "vm_core_fraction" {
-  description = "Core fraction for VMs (5-100)"
+variable "nginx_port" {
+  description = "Nginx port"
   type        = number
-  default     = 100
+  default     = 80
 }
 
 # ============================================
@@ -146,15 +147,15 @@ variable "mysql_cluster_name" {
 }
 
 variable "mysql_environment" {
-  description = "Environment for MySQL cluster"
+  description = "Environment for MySQL cluster (PRESTABLE, PRODUCTION)"
   type        = string
   default     = "PRESTABLE"
 }
 
 variable "mysql_ha_enabled" {
-  description = "Enable High Availability"
+  description = "Enable High Availability (true = 2 hosts, false = 1 host)"
   type        = bool
-  default     = false
+  default     = false  # Начинаем с 1 хоста, потом меняем на true
 }
 
 variable "mysql_version" {
@@ -164,9 +165,9 @@ variable "mysql_version" {
 }
 
 variable "mysql_resource_preset_id" {
-  description = "Resource preset for MySQL hosts"
+  description = "Resource preset for MySQL hosts (минимальная конфигурация)"
   type        = string
-  default     = "s2.micro"
+  default     = "s2.micro"  # 2 vCPU, 8 GB RAM - минимальная
 }
 
 variable "mysql_disk_type_id" {
@@ -178,7 +179,7 @@ variable "mysql_disk_type_id" {
 variable "mysql_disk_size" {
   description = "Disk size in GB for MySQL"
   type        = number
-  default     = 10
+  default     = 10  # Минимальный размер
 }
 
 variable "mysql_backup_window_hours" {
@@ -200,7 +201,7 @@ variable "mysql_backup_retain_period" {
 }
 
 variable "mysql_database_name" {
-  description = "Name of the database"
+  description = "Name of the database to create"
   type        = string
   default     = "testdb"
 }
@@ -215,6 +216,7 @@ variable "mysql_user_password" {
   description = "Password for the database user"
   type        = string
   sensitive   = true
+  default     = null  # Должен быть задан в terraform.tfvars
 }
 
 variable "mysql_user_roles" {
